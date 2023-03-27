@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "H:\\NETCourse\\gym_tracker\\gym_tracker\\gym_tracker.csproj": {}
+    "H:\\Gym_Tracker_API\\gym_tracker\\gym_tracker\\gym_tracker.csproj": {}
   },
   "projects": {
-    "H:\\NETCourse\\gym_tracker\\gym_tracker\\gym_tracker.csproj": {
+    "H:\\Gym_Tracker_API\\gym_tracker\\gym_tracker\\gym_tracker.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "H:\\NETCourse\\gym_tracker\\gym_tracker\\gym_tracker.csproj",
+        "projectUniqueName": "H:\\Gym_Tracker_API\\gym_tracker\\gym_tracker\\gym_tracker.csproj",
         "projectName": "gym_tracker",
-        "projectPath": "H:\\NETCourse\\gym_tracker\\gym_tracker\\gym_tracker.csproj",
+        "projectPath": "H:\\Gym_Tracker_API\\gym_tracker\\gym_tracker\\gym_tracker.csproj",
         "packagesPath": "C:\\Users\\mateu\\.nuget\\packages\\",
-        "outputPath": "H:\\NETCourse\\gym_tracker\\gym_tracker\\obj\\",
+        "outputPath": "H:\\Gym_Tracker_API\\gym_tracker\\gym_tracker\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\mateu\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,9 +40,31 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
+            "Microsoft.AspNetCore.Identity": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[7.0.3, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[7.0.4, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[7.0.4, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
