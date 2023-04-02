@@ -1,12 +1,8 @@
-using System.Security.Claims;
 using gym_tracker.Infra.Authentication;
-using gym_tracker.Services;
 using gym_tracker.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.Primitives;
-using Org.BouncyCastle.Ocsp;
+using IAuthenticationService = gym_tracker.Services.IAuthenticationService;
 
 namespace gym_tracker.Controllers;
 
@@ -14,58 +10,72 @@ namespace gym_tracker.Controllers;
 [Route("api/v1/[controller]")]
 public class UserController : ControllerBase
 {
-    private IRegistrationService _registrationService;
+    private readonly IAuthenticationService _authenticationService;
     private readonly UserManager<IdentityUser> _userManager;
-    public UserController(UserManager<IdentityUser> userManager, IRegistrationService registrationService)
+    private readonly EmailTokenProvider<IdentityUser> _emailTokenProvider;
+    private SignInManager<IdentityUser> _signInManager;
+    public UserController(UserManager<IdentityUser> userManager, IAuthenticationService authenticationService, EmailTokenProvider<IdentityUser> emailTokenProvider, SignInManager<IdentityUser> signInManager)
     {
         _userManager = userManager;
-        _registrationService = registrationService;
+        _authenticationService = authenticationService;
+        _emailTokenProvider = emailTokenProvider;
+        _signInManager = signInManager;
     }
     
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<ActionResult> PostUser([FromBody]RegistrationRequest request)
+    public async Task<ActionResult> PostUser([FromBody] RegistrationRequest request)
     {
         var newUser = new IdentityUser { UserName = request.Username, Email = request.Email };
         var result = await _userManager.CreateAsync(newUser, request.Password);
         
         if (!result.Succeeded)
             return BadRequest(result.Errors.ConvertToProblemDetails());
-
-        var loginRequest = new LoginRequest(request.Email, request.Password);
-        var token = await _registrationService.CreateTokenAsync(loginRequest, newUser);
-        var confirmationLink = await _registrationService.GenerateConfirmationLink(newUser);
-        await _registrationService.SendEmailAsync("Hello, this is a test", confirmationLink);
-        return Created($"/register/{newUser.Id}", token);
+        
+        var confirmationCode = await _authenticationService.GenerateConfirmationCode(newUser);
+        await _authenticationService.SendEmailAsync("Insert this code on the app", confirmationCode);
+        return Created($"/register/{newUser.Id}", newUser.Id);
     }
 
     [AllowAnonymous]
-    [HttpPost("login")]
-    public async Task<ActionResult> LoginUser(LoginRequest request)
+    [HttpGet("login")]
+    public async Task<ActionResult<string>> LoginUser([FromBody] LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         
         if (user == null)
             return BadRequest();
         if (!_userManager.CheckPasswordAsync(user, request.Password).Result)
-            return BadRequest();
+            return BadRequest("Password invalid");
         
-        var token = await _registrationService.CreateTokenAsync(request, user);
-        return Created($"/register/{user.Id}", token);
+        if (!user.EmailConfirmed)
+            return Unauthorized("Email confirmation needed");
+
+        var token = await _authenticationService.CreateTokenAsync(request.Email, user);
+        return Ok(token);
     }
     
     [AllowAnonymous]
-    [HttpGet]
-    public async Task<ActionResult> ConfirmEmail(string token, string email)
+    [HttpGet("confirm")]
+    public async Task<ActionResult<string>> ConfirmEmail(ConfirmEmailRequest request)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        
+        var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
             return BadRequest("Failed to find user");
-        
-        var result = await _userManager.ConfirmEmailAsync(user, token);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors.ConvertToProblemDetails());
-        
-        return Ok();
+
+        var result = await _emailTokenProvider.ValidateAsync(UserManager<IdentityUser>.ConfirmEmailTokenPurpose, request.Code, _userManager, user);
+        if (!result)
+             return BadRequest("Code is no longer valid");
+
+        user.EmailConfirmed = true;
+        var updateResult = await _userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+            return BadRequest(updateResult.Errors.ConvertToProblemDetails());
+
+        var token = await _authenticationService.CreateTokenAsync(request.Email, user);
+
+        return Ok(token);
     }
 }

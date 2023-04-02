@@ -1,6 +1,5 @@
 using System.Text;
 using gym_tracker.Infra.Database;
-using gym_tracker.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using AuthenticationService = gym_tracker.Services.AuthenticationService;
+using IAuthenticationService = gym_tracker.Services.IAuthenticationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,10 +26,12 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
         options.SignIn.RequireConfirmedEmail = true;
         options.SignIn.RequireConfirmedAccount = true;
+        
+        
     })
     .AddEntityFrameworkStores<ApplicationDBContext>()
     .AddErrorDescriber<IdentityErrorDescriber>()
-    .AddDefaultTokenProviders();;
+    .AddDefaultTokenProviders();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -70,7 +73,7 @@ builder.Services.AddScoped<IUrlHelper>(x => {
     return factory.GetUrlHelper(actionContext);
 });
 
-builder.Services.AddScoped<IRegistrationService, RegistrationService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 var app = builder.Build();
 
