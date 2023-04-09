@@ -67,20 +67,24 @@ public class UserController : ControllerBase
         if (!result)
              return BadRequest("This code is not valid");
 
-        await _userManager.ConfirmEmailAsync(user, request.Code);
+        var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        
+        var confirmationResult = await _userManager.ConfirmEmailAsync(user, confirmationToken);
         // user.EmailConfirmed = true;
-        // var updateResult = await _userManager.UpdateAsync(user);
-        //
+        //var updateResult = await _userManager.UpdateAsync(user);
+        
         // if (!updateResult.Succeeded)
         //     return BadRequest(updateResult.Errors.ConvertToProblemDetails());
 
+        if (!confirmationResult.Succeeded)
+            return ValidationProblem(confirmationResult.Errors.ConvertToProblemDetails().ToString());
         var token = await _authenticationService.CreateTokenAsync(request.Email, user);
 
         return Ok(token);
     }
 
     [AllowAnonymous]
-    [HttpPost("/reset-request")]
+    [HttpPost("/request-reset")]
     public async Task<ActionResult> ResetPasswordEmail(string email)
     {
         var user = await _userManager.FindByEmailAsync(email);
@@ -93,8 +97,8 @@ public class UserController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("confirm-request")]
-    public async Task<ActionResult> ConfirmResetPassword(ResetPasswordRequest request)
+    [HttpPost("confirm-reset")]
+    public async Task<ActionResult<string>> ConfirmResetPassword(ResetPasswordRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
@@ -105,7 +109,11 @@ public class UserController : ControllerBase
         if (!result)
             return BadRequest("This code is not valid");
 
-        await _userManager.ResetPasswordAsync(user, request.Code, request.NewPassword);
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user); 
+        
+        var resetResult = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
+        if (!resetResult.Succeeded)
+            return (resetResult.Errors.ConvertToProblemDetails().ToString());
         return Ok();
     }
 }
