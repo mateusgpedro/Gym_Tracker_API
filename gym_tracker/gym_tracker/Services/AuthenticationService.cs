@@ -57,21 +57,23 @@ public class AuthenticationService : IAuthenticationService
     public async Task<string> GenerateConfirmationCode(IdentityUser user)
     {
         var token = await _emailTokenProvider.GenerateAsync(UserManager<IdentityUser>.ConfirmEmailTokenPurpose, _userManager, user);
-        // var confirmationLink = Url.Action(
-        //                         "ConfirmEmail", 
-        //                         "User",
-        //                         new { token, userId = user.Id},
-        //                         _request.Scheme);
         return token;
     }
     
-    public async Task<bool> SendEmailAsync(string emailFormat, string confirmationLink)
+    public async Task<string> GenerateResetPassToken(IdentityUser user)
+    {
+        var token = await _emailTokenProvider.GenerateAsync(UserManager<IdentityResult>.ResetPasswordTokenPurpose,
+            _userManager, user);
+        return token;
+    }
+    
+    public async Task<bool> SendEmailAsync(string emailFormat, string confirmationCode)
     {
         var email = new MimeMessage();
         email.From.Add(MailboxAddress.Parse(_configuration["MailSettings:From"]));
         email.To.Add(MailboxAddress.Parse(_configuration["MailSettings:From"]));
         email.Subject = "Test";
-        email.Body = new TextPart(TextFormat.Html) { Text = emailFormat + "\n" + confirmationLink};
+        email.Body = new TextPart(TextFormat.Html) { Text = emailFormat + "\n" + confirmationCode};
 
         var smtp = new SmtpClient();
         await smtp.ConnectAsync("smtp.ethereal.email", 587, SecureSocketOptions.StartTls);
@@ -88,4 +90,6 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
     }
+
+    
 }

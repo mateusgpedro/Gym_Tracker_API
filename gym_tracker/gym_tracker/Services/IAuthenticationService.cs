@@ -8,7 +8,10 @@ public interface IAuthenticationService
    Task<string> CreateTokenAsync(string email, IdentityUser user);
 
    Task<string> GenerateConfirmationCode(IdentityUser user);
+   
+   Task<string> GenerateResetPassToken(IdentityUser user);
 
-   Task<bool> SendEmailAsync(string emailFormat, string confirmationLink);
+   Task<bool> SendEmailAsync(string emailFormat, string confirmationCode);
+
 
 }

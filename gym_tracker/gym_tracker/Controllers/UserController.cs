@@ -24,7 +24,7 @@ public class UserController : ControllerBase
     
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task<ActionResult> PostUser([FromBody] RegistrationRequest request)
+    public async Task<ActionResult> RegisterUser([FromBody] RegistrationRequest request)
     {
         var newUser = new IdentityUser { UserName = request.Username, Email = request.Email };
         var result = await _userManager.CreateAsync(newUser, request.Password);
@@ -59,23 +59,53 @@ public class UserController : ControllerBase
     [HttpGet("confirm")]
     public async Task<ActionResult<string>> ConfirmEmail(ConfirmEmailRequest request)
     {
-        
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
             return BadRequest("Failed to find user");
 
         var result = await _emailTokenProvider.ValidateAsync(UserManager<IdentityUser>.ConfirmEmailTokenPurpose, request.Code, _userManager, user);
         if (!result)
-             return BadRequest("Code is no longer valid");
+             return BadRequest("This code is not valid");
 
-        user.EmailConfirmed = true;
-        var updateResult = await _userManager.UpdateAsync(user);
-
-        if (!updateResult.Succeeded)
-            return BadRequest(updateResult.Errors.ConvertToProblemDetails());
+        await _userManager.ConfirmEmailAsync(user, request.Code);
+        // user.EmailConfirmed = true;
+        // var updateResult = await _userManager.UpdateAsync(user);
+        //
+        // if (!updateResult.Succeeded)
+        //     return BadRequest(updateResult.Errors.ConvertToProblemDetails());
 
         var token = await _authenticationService.CreateTokenAsync(request.Email, user);
 
         return Ok(token);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("/reset-request")]
+    public async Task<ActionResult> ResetPasswordEmail(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+            return BadRequest("Failed to find user");
+        
+        var token = await _authenticationService.GenerateResetPassToken(user);
+        await _authenticationService.SendEmailAsync("Code to reset password:\n", token);
+        return Ok();
+    }
+
+    [AllowAnonymous]
+    [HttpGet("confirm-request")]
+    public async Task<ActionResult> ConfirmResetPassword(ResetPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            return BadRequest("Failed to find user");
+
+        var result = await _emailTokenProvider.ValidateAsync(UserManager<IdentityUser>.ResetPasswordTokenPurpose,
+            request.Code, _userManager, user);
+        if (!result)
+            return BadRequest("This code is not valid");
+
+        await _userManager.ResetPasswordAsync(user, request.Code, request.NewPassword);
+        return Ok();
     }
 }
