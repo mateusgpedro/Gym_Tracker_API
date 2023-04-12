@@ -70,11 +70,6 @@ public class UserController : ControllerBase
         var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         
         var confirmationResult = await _userManager.ConfirmEmailAsync(user, confirmationToken);
-        // user.EmailConfirmed = true;
-        //var updateResult = await _userManager.UpdateAsync(user);
-        
-        // if (!updateResult.Succeeded)
-        //     return BadRequest(updateResult.Errors.ConvertToProblemDetails());
 
         if (!confirmationResult.Succeeded)
             return ValidationProblem(confirmationResult.Errors.ConvertToProblemDetails().ToString());
@@ -97,7 +92,7 @@ public class UserController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("confirm-reset")]
+    [HttpPut("confirm-reset")]
     public async Task<ActionResult<string>> ConfirmResetPassword(ResetPasswordRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
@@ -113,7 +108,7 @@ public class UserController : ControllerBase
         
         var resetResult = await _userManager.ResetPasswordAsync(user, token, request.NewPassword);
         if (!resetResult.Succeeded)
-            return (resetResult.Errors.ConvertToProblemDetails().ToString());
+            return resetResult.Errors.ConvertToProblemDetails().ToString();
         return Ok();
     }
 }
