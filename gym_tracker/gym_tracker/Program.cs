@@ -1,5 +1,7 @@
 using System.Text;
 using gym_tracker.Infra.Database;
+using gym_tracker.Infra.Users;
+using gym_tracker.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,10 +15,11 @@ using IAuthenticationService = gym_tracker.Services.IAuthenticationService;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddSqlServer<ApplicationDBContext>(builder.Configuration["ConnectionStrings:GymTrackerDb"]);
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddNpgsql<ApplicationDbContext>(builder.Configuration["ConnectionStrings:GymTrackerDb"]);
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     {
         options.User.RequireUniqueEmail = true;
+        options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyz1234567890._-";
 
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireDigit = true;
@@ -25,11 +28,11 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
         options.Password.RequiredLength = 8;
 
         options.SignIn.RequireConfirmedEmail = true;
-        options.SignIn.RequireConfirmedAccount = true;
-        
-        
+
+        options.Tokens.EmailConfirmationTokenProvider = TokenOptions.DefaultEmailProvider;
+        options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultEmailProvider;
     })
-    .AddEntityFrameworkStores<ApplicationDBContext>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddErrorDescriber<IdentityErrorDescriber>()
     .AddDefaultTokenProviders();
 
@@ -49,14 +52,15 @@ builder.Services.AddAuthentication(x =>
 {
     options.TokenValidationParameters = new TokenValidationParameters()
     {
+        RequireExpirationTime = false,
+        ValidateIssuer = true,
         ValidateActor = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ClockSkew = TimeSpan.Zero,
         ValidIssuer = builder.Configuration["JwtBearerTokenSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtBearerTokenSettings:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("JwtBearerTokenSettings:SecretKey"))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerTokenSettings:SecretKey"]))
     };
 });
 
@@ -74,6 +78,7 @@ builder.Services.AddScoped<IUrlHelper>(x => {
 });
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+//builder.Services.AddScoped<ISearchService, SearchService>();
 
 var app = builder.Build();
 

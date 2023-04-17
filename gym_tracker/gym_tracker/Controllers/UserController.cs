@@ -1,4 +1,5 @@
 using gym_tracker.Infra.Authentication;
+using gym_tracker.Infra.Users;
 using gym_tracker.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,10 +12,10 @@ namespace gym_tracker.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IAuthenticationService _authenticationService;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly EmailTokenProvider<IdentityUser> _emailTokenProvider;
-    private SignInManager<IdentityUser> _signInManager;
-    public UserController(UserManager<IdentityUser> userManager, IAuthenticationService authenticationService, EmailTokenProvider<IdentityUser> emailTokenProvider, SignInManager<IdentityUser> signInManager)
+    private readonly UserManager<AppUser> _userManager;
+    private readonly EmailTokenProvider<AppUser> _emailTokenProvider;
+    private SignInManager<AppUser> _signInManager;
+    public UserController(UserManager<AppUser> userManager, IAuthenticationService authenticationService, EmailTokenProvider<AppUser> emailTokenProvider, SignInManager<AppUser> signInManager)
     {
         _userManager = userManager;
         _authenticationService = authenticationService;
@@ -26,7 +27,7 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult> RegisterUser([FromBody] RegistrationRequest request)
     {
-        var newUser = new IdentityUser { UserName = request.Username, Email = request.Email };
+        var newUser = new AppUser { UserName = request.Username, Email = request.Email, FullName = request.Fullname};
         var result = await _userManager.CreateAsync(newUser, request.Password);
         
         if (!result.Succeeded)
@@ -56,8 +57,8 @@ public class UserController : ControllerBase
     }
     
     [AllowAnonymous]
-    [HttpGet("confirm")]
-    public async Task<ActionResult<string>> ConfirmEmail(ConfirmEmailRequest request)
+    [HttpPut("confirm")]
+    public async Task<ActionResult<string>> ConfirmEmail([FromBody] ConfirmEmailRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
@@ -79,10 +80,10 @@ public class UserController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpPost("/request-reset")]
-    public async Task<ActionResult> ResetPasswordEmail(string email)
+    [HttpPost("request-reset")]
+    public async Task<ActionResult> ResetPasswordEmail([FromBody] RequestPasswordReset request)
     {
-        var user = await _userManager.FindByEmailAsync(email);
+        var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
             return BadRequest("Failed to find user");
         
@@ -93,7 +94,7 @@ public class UserController : ControllerBase
 
     [AllowAnonymous]
     [HttpPut("confirm-reset")]
-    public async Task<ActionResult<string>> ConfirmResetPassword(ResetPasswordRequest request)
+    public async Task<ActionResult<string>> ConfirmResetPassword(ConfirmPasswordReset request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)

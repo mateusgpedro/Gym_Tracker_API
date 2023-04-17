@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using gym_tracker.Infra.Authentication;
+using gym_tracker.Infra.Users;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
@@ -13,28 +13,27 @@ namespace gym_tracker.Services;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly IConfiguration _configuration;
     private IUrlHelper Url;
     private HttpRequest _request;
-    private readonly EmailTokenProvider<IdentityUser> _emailTokenProvider;
+    //private readonly EmailTokenProvider<IdentityUser> _emailTokenProvider;
 
-    public AuthenticationService(UserManager<IdentityUser> userManager, IConfiguration configuration, IUrlHelper url, IHttpContextAccessor httpContextAccessor, EmailTokenProvider<IdentityUser> tokenProvider)
+    public AuthenticationService(UserManager<AppUser> userManager, IConfiguration configuration, IUrlHelper url, IHttpContextAccessor httpContextAccessor)
     {
         _userManager = userManager;
         _configuration = configuration;
         Url = url;
         _request = httpContextAccessor.HttpContext.Request;
-        _emailTokenProvider = tokenProvider;
+        //_emailTokenProvider = tokenProvider;
     }
 
-    public async Task<string> CreateTokenAsync(string email, IdentityUser user)
+    public async Task<string> CreateTokenAsync(string email, AppUser user)
     {
         var claims = await _userManager.GetClaimsAsync(user);
         var subject = new ClaimsIdentity(new Claim[]
         {
             new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
         });
         subject.AddClaims(claims);
 
@@ -54,16 +53,17 @@ public class AuthenticationService : IAuthenticationService
         return (tokenHandler.WriteToken(token));
     }
 
-    public async Task<string> GenerateConfirmationCode(IdentityUser user)
+    public async Task<string> GenerateConfirmationCode(AppUser user)
     {
-        var token = await _emailTokenProvider.GenerateAsync(UserManager<IdentityUser>.ConfirmEmailTokenPurpose, _userManager, user);
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        //var token = await _emailTokenProvider.GenerateAsync(UserManager<AppUser>.ConfirmEmailTokenPurpose, _userManager, user);
         return token;
     }
     
-    public async Task<string> GenerateResetPassToken(IdentityUser user)
+    public async Task<string> GenerateResetPassToken(AppUser user)
     {
-        var token = await _emailTokenProvider.GenerateAsync(UserManager<IdentityResult>.ResetPasswordTokenPurpose,
-            _userManager, user);
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        // var token = await _emailTokenProvider.GenerateAsync(UserManager<AppUser>.ResetPasswordTokenPurpose, _userManager, user);
         return token;
     }
     
