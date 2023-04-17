@@ -6,8 +6,7 @@ namespace gym_tracker.Infra.Users;
 public class FollowUser
 {
     public string FollowerId { get; set; }
-    public string 
+    public string FollowingId { get; set; }
 
-    public 
     public ICollection<AppUser> Following { get; set; }
 }
