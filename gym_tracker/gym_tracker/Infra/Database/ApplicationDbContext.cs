@@ -1,4 +1,5 @@
 using gym_tracker.Infra.Users;
+using gym_tracker.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,10 +12,21 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        builder.Entity<AppUser>()
-            .HasOne(u => u.FollowUser)
-            .WithMany(f => f.Following)
-            .HasForeignKey(e => e.Id);
+        
+        // Follow System
+        builder.Entity<FollowUser>()
+            .HasKey(fu => new { fu.FollowerId, fu.FollowingId });
+
+        builder.Entity<FollowUser>()
+            .HasOne(fu => fu.Follower)
+            .WithMany(u => u.Follower)
+            .HasForeignKey(fu => fu.FollowingId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<FollowUser>()
+            .HasOne(fu => fu.Following)
+            .WithMany(u => u.Following)
+            .HasForeignKey(fu => fu.FollowerId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
     private DbSet<FollowUser> FollowUsers { get; set; }

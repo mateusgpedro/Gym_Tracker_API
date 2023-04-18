@@ -4,5 +4,7 @@ namespace gym_tracker.Services;
 
 public interface IFollowService
 {
-    Task FollowUser(FollowRequest request);
+    Task<bool> FollowUser(AppUser currentUser, AppUser followedUser, bool isPrivate);
+    
+    //Task<bool> Decline
 }
