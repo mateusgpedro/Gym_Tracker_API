@@ -10,6 +10,6 @@ public class FollowUser
 
     public required bool PendingStatus { get; set; } = false;
 
-    public AppUser Follower;
+    public AppUser Follower { get; set; }
     public AppUser Following { get; set; }
 }

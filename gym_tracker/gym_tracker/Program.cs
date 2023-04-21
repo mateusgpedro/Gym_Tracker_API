@@ -78,6 +78,7 @@ builder.Services.AddScoped<IUrlHelper>(x => {
 });
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+builder.Services.AddScoped<IFollowService, FollowService>();
 //builder.Services.AddScoped<ISearchService, SearchService>();
 
 var app = builder.Build();

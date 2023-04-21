@@ -7,6 +7,12 @@ namespace gym_tracker.Infra.Users;
 
 public class AppUser : IdentityUser
 {
+    public AppUser()
+    {
+        Follower = new List<FollowUser>();
+        Following = new List<FollowUser>();
+    } 
+    
     public override string Id { get; set; }
     public required string FullName { get; set; }
     
