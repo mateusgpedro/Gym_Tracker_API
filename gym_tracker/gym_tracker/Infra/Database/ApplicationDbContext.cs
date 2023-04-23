@@ -29,5 +29,5 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
             .OnDelete(DeleteBehavior.Restrict);
     }
 
-    private DbSet<FollowUser> FollowUsers { get; set; }
+    public DbSet<FollowUser> FollowUsers { get; set; }
 }

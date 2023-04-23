@@ -1,3 +1,4 @@
+using gym_tracker.Infra.Database;
 using gym_tracker.Infra.Users;
 using gym_tracker.Models;
 using gym_tracker.Utils;
@@ -10,10 +11,12 @@ namespace gym_tracker.Services;
 public class FollowService : IFollowService
 {
     private UserManager<AppUser> _userManager;
+    private ApplicationDbContext _dbContext;
     
-    public FollowService(UserManager<AppUser> userManager)
+    public FollowService(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
     {
         _userManager = userManager;
+        _dbContext = dbContext;
     }
 
     public async Task<bool> FollowUser(AppUser currentUser, AppUser followedUser, bool isPrivate)
@@ -21,7 +24,7 @@ public class FollowService : IFollowService
         if (currentUser.Following == null) {
             currentUser.Following = new List<FollowUser>();
         }
-        
+
         var follow = new FollowUser
         {
             FollowingId = currentUser.Id,
@@ -42,24 +45,20 @@ public class FollowService : IFollowService
         
         return true;
     }
-
     
-    public async Task<bool> DeclineFollowRequest(AppUser currentUser, AppUser followingUser)
+    public async Task<bool> RemoveFollower(AppUser currentUser, AppUser followerUser)
     {
-        // if (followingUser.Follower == null)
-        //     followingUser.Follower = new List<FollowUser>();
+        followerUser = await GetUserByIdWithFollowersAndFollowing(followerUser.Id);
 
-        followingUser = await GetUserByIdWithFollowersAndFollowing(followingUser.Id);
-
-        var followRequest = followingUser.Follower.FirstOrDefault(f => f.FollowerId == currentUser.Id);
+        var followRequest = followerUser.Follower.FirstOrDefault(f => f.FollowerId == currentUser.Id);
 
         if (followRequest == null)
         {
             return false;
         }
 
-        followingUser.Follower.Remove(followRequest);
-        var result = await _userManager.UpdateAsync(followingUser);
+        followerUser.Follower.Remove(followRequest);
+        var result = await _userManager.UpdateAsync(followerUser);
 
         if (!result.Succeeded)
         {
@@ -68,25 +67,25 @@ public class FollowService : IFollowService
 
         return true;
     }
-    
-    public async Task<int> GetFollowingCount(AppUser currentUser)
-    {
-        var count = await _userManager.Users
-            .Where(u => u.Id == currentUser.Id)
-            .Select(u => u.Following.Count)
-            .FirstOrDefaultAsync();
 
-        return count;
-    }
-    
-    public async Task<int> GetFollowersCount(AppUser currentUser)
+    public async Task<bool> AcceptFollowRequest(AppUser currentUser, AppUser followerUser)
     {
-        var count = await _userManager.Users
-            .Where(u => u.Id == currentUser.Id)
-            .Select(u => u.Follower.Count)
-            .FirstOrDefaultAsync();
+        currentUser = await GetUserByIdWithFollowersAndFollowing(currentUser.Id);
 
-        return count;
+        var followRequest = followerUser.Following.FirstOrDefault(f => f.FollowingId == currentUser.Id);
+
+        if (followRequest == null)
+            return false;
+        
+        followRequest.PendingStatus = false;
+        var result = await _userManager.UpdateAsync(followerUser);
+
+        if (!result.Succeeded)
+        {
+            return false;
+        }
+        
+        return true;
     }
     
     public async Task<AppUser> GetUserByIdWithFollowersAndFollowing(string userId)

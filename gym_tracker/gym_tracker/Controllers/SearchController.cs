@@ -1,7 +1,9 @@
 using gym_tracker.Infra.Users;
+using gym_tracker.Infra.Users.Responses;
 using gym_tracker.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace gym_tracker.Controllers;
@@ -22,18 +24,22 @@ public class SearchController : ControllerBase
     
     [Authorize]
     [HttpGet("search-all")]
-    public ActionResult<List<AppUser>> SearchAllUsers([FromBody] SearchUserRequest? request)
+    public async Task<ActionResult<List<GetUsersResponse>>> SearchAllUsers([FromBody] SearchUserRequest? request)
     {
         if (request.Username is null)
             return Ok(Enumerable.Empty<AppUser>().ToList());
         //char[] delimitChars = { '.', '_', '-' };
 
-        List<AppUser> users;
+        List<GetUsersResponse> users;
         
         if (request.Username.ContainsAny(' '))
-            users = _userManager.Users.Where(u => u.FullName.Contains(request.Username)).ToList();
+            users = _userManager.Users.Where(u => u.FullName.Contains(request.Username))
+                .Select(u => new GetUsersResponse(u.FullName, u.UserName))
+                .ToList();
         else
-            users = _userManager.Users.Where(u => u.UserName.Contains(request.Username)).ToList();
+            users = await _userManager.Users.Where(u => u.UserName.Contains(request.Username))
+                .Select(u => new GetUsersResponse(u.FullName, u.UserName))
+                .ToListAsync();
 
         if (users.IsNullOrEmpty())
             return Ok("No users found");

@@ -6,10 +6,9 @@ public interface IFollowService
 {
     Task<bool> FollowUser(AppUser currentUser, AppUser followedUser, bool isPrivate);
 
-    Task<bool> DeclineFollowRequest(AppUser currentUser, AppUser? followerUser);
-    
-    Task<int> GetFollowersCount(AppUser currentUser);
-    Task<int> GetFollowingCount(AppUser userId);
+    Task<bool> RemoveFollower(AppUser currentUser, AppUser followingUser);
+
+    Task<bool> AcceptFollowRequest(AppUser currentUser, AppUser followerUser);
 
     Task<AppUser> GetUserByIdWithFollowersAndFollowing(string userId);
 }
