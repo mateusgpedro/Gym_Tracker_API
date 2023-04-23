@@ -29,11 +29,11 @@ public class FollowController : ControllerBase
     [HttpPost("follow")]
     public async Task<ActionResult> FollowUser([FromBody] FollowRequest request)
     {
-        if (request.CurrentUserId == request.FollowingUserId)
+        if (request.CurrentUserId == request.TargetUserId)
             BadRequest("The user cannot follow himself");
         
         var currentUser = await _userManager.FindByIdAsync(request.CurrentUserId);
-        var followedUser = await _userManager.FindByIdAsync(request.FollowingUserId);
+        var followedUser = await _userManager.FindByIdAsync(request.TargetUserId);
 
         if (currentUser == null || followedUser == null)
         {
@@ -42,27 +42,29 @@ public class FollowController : ControllerBase
         }
         
         var result = await _followService.FollowUser(currentUser, followedUser, followedUser.IsPrivate);
+
+        if (!result)
+            return BadRequest("Failed to follow the specified user");
         return Ok();
     }
 
-    [HttpDelete("decline-follow")]
-    public async Task<ActionResult> DeclineOrRemoveFollower(FollowActionRequest request)
+    [HttpDelete("remove-follow")]
+    public async Task<ActionResult> RemoveFollow(FollowRequest request)
     {
         var currentUser = await _userManager.FindByIdAsync(request.CurrentUserId);
-        var followingUser = await _userManager.FindByIdAsync(request.FollowerUserId);
+        var followedUser = await _userManager.FindByIdAsync(request.TargetUserId);
 
-        if (currentUser == null || followingUser == null)
+        if (currentUser == null || followedUser == null)
         {
             // handle the case where either user is not found
             return BadRequest("User not found");
         }
-
-        var result = await _followService.RemoveFollower(currentUser, followingUser);
+        
+        var result = await _followService.UnfollowUser(currentUser, followedUser, true);
 
         if (!result)
-            return BadRequest("The specified user didn't request a follow on the current user");
-
-        return Ok("Follow request declined");
+            return BadRequest("Failed to unfollow the specified user");
+        return Ok();
     }
 
     [HttpGet("followers-count/{userId}")]
@@ -119,8 +121,8 @@ public class FollowController : ControllerBase
     [HttpPut("accept-follow")]
     public async Task<ActionResult> AcceptFollowRequest(FollowActionRequest request)
     {
-        var currentUser = await _userManager.FindByIdAsync(request.CurrentUserId);
-        var followerUser = await _userManager.FindByIdAsync(request.FollowerUserId);
+        var currentUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId);
+        var followerUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.TargetUserId);
 
         if (currentUser == null || followerUser == null)
             return BadRequest("Failed to find user with the specific id");
@@ -134,14 +136,14 @@ public class FollowController : ControllerBase
     }
 
     [HttpGet("is-following")]
-    public async Task<ActionResult<bool>> GetIfIsFolloingwUser(FollowActionRequest request)
+    public async Task<ActionResult<bool>> GetIfIsFolloingwUser(FollowRequest request)
     {
         var currentUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId);
         
         if (currentUser == null)
             return BadRequest("Failed to find user with the specific id");
         
-        return Ok(currentUser.Following.Any(f => f.FollowingId == request.FollowerUserId && f.PendingStatus == false));
+        return Ok(currentUser.Following.Any(f => f.FollowingId == request.TargetUserId && f.PendingStatus == false));
     }
     
     [HttpGet("user-followers/{userId}")]
@@ -186,5 +188,37 @@ public class FollowController : ControllerBase
             return Ok("User");
         
         return Ok(follower);
+    }
+
+    [HttpPost("block-user")]
+    public async Task<ActionResult> BlockUser(BlockUserRequest request)
+    {
+        var currentUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId);
+        var blockedUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.BlockedUserId);
+
+        if (currentUser == null || blockedUser == null)
+            return BadRequest("Failed to find user with specific id");
+
+        var result = await _followService.BlockUser(currentUser, blockedUser);
+        if (!result)
+            return BadRequest("Failed to block the specified user");
+
+        return Ok();
+    }
+    
+    [HttpDelete("unblock-user")]
+    public async Task<ActionResult> UnblockUser(BlockUserRequest request)
+    {
+        var currentUser = await _userManager.FindByIdAsync(request.CurrentUserId);
+        var blockedUser = await _userManager.FindByIdAsync(request.BlockedUserId);
+
+        if (currentUser == null || blockedUser == null)
+            return BadRequest("Failed to find user with specific id");
+
+        var result = await _followService.UnblockUser(currentUser, blockedUser);
+        if (!result)
+            return BadRequest("Failed to unblock the specified user");
+
+        return Ok();
     }
 }

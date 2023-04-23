@@ -1,3 +1,3 @@
 namespace gym_tracker.Infra.Users;
 
-public record FollowActionRequest(string CurrentUserId, string FollowerUserId);
+public record FollowActionRequest(string CurrentUserId, string TargetUserId);

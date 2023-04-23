@@ -11,6 +11,9 @@ public class AppUser : IdentityUser
     {
         Follower = new List<FollowUser>();
         Following = new List<FollowUser>();
+
+        Blocker = new List<BlockUser>();
+        Blocking = new List<BlockUser>();
     } 
     
     public override string Id { get; set; }
@@ -20,6 +23,9 @@ public class AppUser : IdentityUser
     public ICollection<FollowUser> Follower { get; set; }
     public ICollection<FollowUser> Following { get; set; }
     
+    public ICollection<BlockUser> Blocker { get; set; }
+    public ICollection<BlockUser> Blocking { get; set; }
+
     // Account Settings
     public bool IsPrivate { get; set; } = false;
 }
