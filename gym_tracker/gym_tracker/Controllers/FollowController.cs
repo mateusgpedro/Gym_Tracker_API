@@ -181,11 +181,11 @@ public class FollowController : ControllerBase
             .Include(f => f.Following)
             .Where(f => f.FollowerId == userId && f.PendingStatus == false)
             .Select(f => f.Following)
-            .Select(f => new GetUsersResponse(f.FullName, f.UserName))
+            .Select(u => new GetUsersResponse(u.FullName, u.UserName))
             .ToListAsync();
 
         if (follower.IsNullOrEmpty())
-            return Ok("User");
+            return Ok();
         
         return Ok(follower);
     }
