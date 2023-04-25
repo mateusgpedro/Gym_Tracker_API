@@ -78,7 +78,7 @@ public class SearchController : ControllerBase
                 .Select(u => new GetUsersResponse(u.FullName, u.UserName))
                 .ToListAsync();
         }
-
+        
         if (users.IsNullOrEmpty())
             return Ok();
 

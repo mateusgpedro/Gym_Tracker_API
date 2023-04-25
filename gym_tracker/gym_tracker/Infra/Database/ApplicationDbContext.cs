@@ -42,7 +42,25 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
             .WithMany(u => u.Blocking)
             .HasForeignKey(bu => bu.BlockerId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        // Posts System
+        builder.Entity<Post>()
+            .Property(p => p.Tag)
+            .HasConversion(
+                c => c.ToString(),
+                c => (PostTag)Enum.Parse(typeof(PostTag), c));
+
+        builder.Entity<Post>()
+            .HasKey(b => b.UserId);
+        
+        builder.Entity<Post>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.Posts)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 
+    public DbSet<Post> Posts { get; set; }
     public DbSet<FollowUser> FollowUsers { get; set; }
+    public DbSet<BlockUser> BlockUsers { get; set; }
 }

@@ -26,6 +26,8 @@ public class AppUser : IdentityUser
     public ICollection<BlockUser> Blocker { get; set; }
     public ICollection<BlockUser> Blocking { get; set; }
 
+    public ICollection<Post> Posts { get; set; }
+
     // Account Settings
     public bool IsPrivate { get; set; } = false;
 }
