@@ -48,7 +48,7 @@ public class FollowService : IFollowService
 
     public async Task<bool> UnfollowUser(AppUser currentUser, AppUser followerUser, bool canSave)
     {
-        currentUser = await GetUserByIdWithFollowersAndFollowing(currentUser.Id);
+        currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(currentUser.Id, _userManager);
 
         var follow = currentUser.Following.FirstOrDefault(f => f.FollowingId == followerUser.Id);
 
@@ -72,7 +72,7 @@ public class FollowService : IFollowService
 
     public async Task<bool> AcceptFollowRequest(AppUser currentUser, AppUser followerUser)
     {
-        currentUser = await GetUserByIdWithFollowersAndFollowing(currentUser.Id);
+        currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(currentUser.Id, _userManager);
 
         var followRequest = followerUser.Following.FirstOrDefault(f => f.FollowingId == currentUser.Id);
 
@@ -92,7 +92,7 @@ public class FollowService : IFollowService
 
     public async Task<bool> BlockUser(AppUser currentUser, AppUser blockedUser)
     {
-        currentUser = await GetUserByIdWithBlockAndFollow(currentUser.Id);
+        currentUser = await GetUser.GetUserByIdWithBlockAndFollow(currentUser.Id, _userManager);
         
         if (currentUser.Blocking == null)
             currentUser.Blocking = new List<BlockUser>();
@@ -133,7 +133,7 @@ public class FollowService : IFollowService
 
     public async Task<bool> UnblockUser(AppUser currentUser, AppUser blockedUser)
     {
-        currentUser = await GetUserByIdWithBlockerAndBlocking(currentUser.Id);
+        currentUser = await GetUser.GetUserByIdWithBlockerAndBlocking(currentUser.Id, _userManager);
         
         var block = currentUser.Blocking.FirstOrDefault(bu => bu.BlockingId == blockedUser.Id);
 
@@ -152,29 +152,5 @@ public class FollowService : IFollowService
         return true;
     }
     
-    public async Task<AppUser> GetUserByIdWithBlockAndFollow(string userId)
-    {
-        return await _userManager.Users
-            .Include(u => u.Blocker)
-            .Include(u => u.Blocking)
-            .Include(u => u.Follower)
-            .Include(u => u.Following)
-            .SingleOrDefaultAsync(u => u.Id == userId);
-    }
     
-    public async Task<AppUser> GetUserByIdWithBlockerAndBlocking(string userId)
-    {
-        return await _userManager.Users
-            .Include(u => u.Blocker)
-            .Include(u => u.Blocking)
-            .SingleOrDefaultAsync(u => u.Id == userId);
-    }
-    
-    public async Task<AppUser> GetUserByIdWithFollowersAndFollowing(string userId)
-    {
-        return await _userManager.Users
-            .Include(u => u.Follower)
-            .Include(u => u.Following)
-            .SingleOrDefaultAsync(u => u.Id == userId);
-    }
 }

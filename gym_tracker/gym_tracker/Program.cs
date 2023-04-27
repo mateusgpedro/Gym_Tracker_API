@@ -2,6 +2,7 @@ using System.Text;
 using gym_tracker.Infra.Database;
 using gym_tracker.Infra.Users;
 using gym_tracker.Services;
+using gym_tracker.Services.Posts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -79,6 +80,7 @@ builder.Services.AddScoped<IUrlHelper>(x => {
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
+builder.Services.AddScoped<IPostService, PostService>();
 //builder.Services.AddScoped<ISearchService, SearchService>();
 
 var app = builder.Build();

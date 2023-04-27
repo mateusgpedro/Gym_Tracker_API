@@ -68,7 +68,7 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
             .HasMaxLength(1500);
 
         builder.Entity<Comment>()
-            .HasKey(c => new { c.PostId, c.CommentId });
+            .HasKey(c => new { c.PostId, c.UserId });
 
         builder.Entity<Comment>()
             .HasOne(c => c.User)

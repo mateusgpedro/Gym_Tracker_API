@@ -6,6 +6,7 @@ using gym_tracker.Infra.Users.Responses;
 using Microsoft.AspNetCore.Identity;
 using gym_tracker.Models;
 using gym_tracker.Services;
+using gym_tracker.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -121,8 +122,8 @@ public class FollowController : ControllerBase
     [HttpPut("accept-follow")]
     public async Task<ActionResult> AcceptFollowRequest(FollowActionRequest request)
     {
-        var currentUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId);
-        var followerUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.TargetUserId);
+        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId, _userManager);
+        var followerUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.TargetUserId, _userManager);
 
         if (currentUser == null || followerUser == null)
             return BadRequest("Failed to find user with the specific id");
@@ -138,7 +139,7 @@ public class FollowController : ControllerBase
     [HttpGet("is-following")]
     public async Task<ActionResult<bool>> GetIfIsFolloingwUser(FollowRequest request)
     {
-        var currentUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId);
+        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId, _userManager);
         
         if (currentUser == null)
             return BadRequest("Failed to find user with the specific id");
@@ -193,8 +194,8 @@ public class FollowController : ControllerBase
     [HttpPost("block-user")]
     public async Task<ActionResult> BlockUser(BlockUserRequest request)
     {
-        var currentUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId);
-        var blockedUser = await _followService.GetUserByIdWithFollowersAndFollowing(request.BlockedUserId);
+        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId, _userManager);
+        var blockedUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.BlockedUserId, _userManager);
 
         if (currentUser == null || blockedUser == null)
             return BadRequest("Failed to find user with specific id");

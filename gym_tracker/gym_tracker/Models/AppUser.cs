@@ -31,6 +31,9 @@ public class AppUser : IdentityUser
 
     public ICollection<Post> Posts { get; set; }
     public ICollection<Comment> Comments { get; set; }
+    
+    public ICollection<Vote<Post>> PostVotes { get; set; }
+    public ICollection<Vote<Comment>> CommentVotes { get; set; }
 
     // Account Settings
     public bool IsPrivate { get; set; } = false;

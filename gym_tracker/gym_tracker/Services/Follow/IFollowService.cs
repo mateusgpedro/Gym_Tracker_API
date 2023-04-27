@@ -12,8 +12,4 @@ public interface IFollowService
 
     Task<bool> BlockUser(AppUser currentUser, AppUser blockedUser);
     Task<bool> UnblockUser(AppUser currentUser, AppUser blockedUser);
-    Task<AppUser> GetUserByIdWithBlockAndFollow(string userId);
-    Task<AppUser> GetUserByIdWithBlockerAndBlocking(string userId);
-    
-    Task<AppUser> GetUserByIdWithFollowersAndFollowing(string userId);
 }

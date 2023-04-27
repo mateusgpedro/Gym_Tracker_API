@@ -2,6 +2,8 @@ using gym_tracker.Infra.Database;
 using gym_tracker.Infra.Posts.Requests;
 using gym_tracker.Infra.Users;
 using gym_tracker.Models;
+using gym_tracker.Services.Posts;
+using gym_tracker.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +17,13 @@ public class PostController : ControllerBase
 {
     private ApplicationDbContext _dbContext;
     private UserManager<AppUser> _userManager;
+    private IPostService _postService;
 
-    public PostController(UserManager<AppUser> userManager, ApplicationDbContext dbContext)
+    public PostController(UserManager<AppUser> userManager, ApplicationDbContext dbContext, IPostService postService)
     {
         _userManager = userManager;
         _dbContext = dbContext;
+        _postService = postService;
     }
 
     [Authorize]
@@ -49,30 +53,34 @@ public class PostController : ControllerBase
     [HttpPost("add-comment")]
     public async Task<ActionResult> AddComment(AddCommentRequest request)
     {
-        var user = await _userManager.FindByIdAsync(request.UserId);
-        var post = _dbContext.Posts
-            .FirstOrDefault(p => p.PostId == Guid.Parse(request.PostId));
+        var result = await _postService
+            .CreateComment(request.UserId, request.PostId, request.CommentText);
+
+        if (!result)
+            return BadRequest("Failed to comment");
         
-        if (user == null)
-            return BadRequest("Failed to find user with the specified id");
-        if (post == null)
-            return BadRequest("Failed to find post with specified id");
-
-        var comment = new Comment(request.UserId, request.PostId, request.CommentText);
-
-        user.Comments.Add(comment);
-        post.Comments.Add(comment);
-        
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-        {
-            result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-                return Ok("Failed to save changes");
-        }
-
         await _dbContext.SaveChangesAsync();
-        return Ok();
+        return Ok("Successfully commented");
     }
-    
+
+    [Authorize]
+    [HttpPost("add-vote")]
+    public async Task<ActionResult> AddVote(VoteRequest request)
+    {
+        var hasVote = await Verify.HasVote(request.UserId, request.ItemId, _userManager);
+        bool result;
+
+        if (hasVote)
+            result = await _postService.ChangeVote(request.UserId, request.ItemId);
+        else
+        {
+            result = await _postService
+                .CreateVote(request.UserId, request.ItemId, request.IsUpvote);
+        }
+        if (!result)
+            return BadRequest("Failed to vote");
+        
+        await _dbContext.SaveChangesAsync();
+        return Ok("Successfully voted");
+    }
 }
