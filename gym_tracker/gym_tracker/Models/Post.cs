@@ -13,27 +13,23 @@ public class Post
     public AppUser User { get; set; }
     
     /// <summary>
-    /// If of the post's owner
+    /// Id of the post's owner
     /// </summary>
     public string UserId { get; set; }
     
     public string Title { get; set; }
     public string? Text { get; set; }
-    public PostTag Tag { get; set; }
 
-    public Post(string userId, string title, string? text, PostTag tag)
+    public int Votes { get; set; } = 0;
+
+    public ICollection<Comment> Comments { get; set; }
+
+    public Post(string userId, string title, string? text)
     {
         PostId = Guid.NewGuid();
         UserId = userId;
         Title = title;
         Text = text;
-        Tag = tag;
+        Comments = new List<Comment>();
     }
-}
-
-public enum PostTag
-{
-    None,
-    Recipe,
-    Training
 }

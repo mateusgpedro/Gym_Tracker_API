@@ -44,23 +44,50 @@ public class ApplicationDbContext : IdentityDbContext<AppUser>
             .OnDelete(DeleteBehavior.Restrict);
         
         // Posts System
-        builder.Entity<Post>()
-            .Property(p => p.Tag)
-            .HasConversion(
-                c => c.ToString(),
-                c => (PostTag)Enum.Parse(typeof(PostTag), c));
+        
+        // builder.Entity<Post>()
+        //     .Property(p => p.Tag)
+        //     .HasConversion(
+        //         c => c.ToString(),
+        //         c => (PostTag)Enum.Parse(typeof(PostTag), c));
 
         builder.Entity<Post>()
-            .HasKey(b => b.UserId);
+            .HasKey(p => p.UserId);
         
         builder.Entity<Post>()
             .HasOne(p => p.User)
             .WithMany(u => u.Posts)
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Post>()
+            .Property(p => p.Title)
+            .HasMaxLength(100);
+        builder.Entity<Post>()
+            .Property(p => p.Text)
+            .HasMaxLength(1500);
+
+        builder.Entity<Comment>()
+            .HasKey(c => new { c.PostId, c.CommentId });
+
+        builder.Entity<Comment>()
+            .HasOne(c => c.User)
+            .WithMany(u => u.Comments)
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<Comment>()
+            .HasOne(c => c.Post)
+            .WithMany(p => p.Comments)
+            .HasForeignKey(c => c.PostId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<Comment>()
+            .Property(c => c.CommentText)
+            .HasMaxLength(1500);
     }
 
     public DbSet<Post> Posts { get; set; }
+    public DbSet<Comment> Comments { get; set; }
     public DbSet<FollowUser> FollowUsers { get; set; }
     public DbSet<BlockUser> BlockUsers { get; set; }
 }

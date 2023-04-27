@@ -14,6 +14,9 @@ public class AppUser : IdentityUser
 
         Blocker = new List<BlockUser>();
         Blocking = new List<BlockUser>();
+
+        Posts = new List<Post>();
+        Comments = new List<Comment>();
     } 
     
     public override string Id { get; set; }
@@ -27,6 +30,7 @@ public class AppUser : IdentityUser
     public ICollection<BlockUser> Blocking { get; set; }
 
     public ICollection<Post> Posts { get; set; }
+    public ICollection<Comment> Comments { get; set; }
 
     // Account Settings
     public bool IsPrivate { get; set; } = false;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using gym_tracker.Infra.Database;
@@ -11,9 +12,11 @@ using gym_tracker.Infra.Database;
 namespace gym_tracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230425182609_RemovedTagFromPost")]
+    partial class RemovedTagFromPost
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -240,30 +243,6 @@ namespace gym_tracker.Migrations
                     b.ToTable("BlockUsers");
                 });
 
-            modelBuilder.Entity("gym_tracker.Models.Comment", b =>
-                {
-                    b.Property<string>("PostId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CommentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("CommentText")
-                        .IsRequired()
-                        .HasMaxLength(1500)
-                        .HasColumnType("character varying(1500)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("PostId", "CommentId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("gym_tracker.Models.FollowUser", b =>
                 {
                     b.Property<string>("FollowerId")
@@ -291,13 +270,11 @@ namespace gym_tracker.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Text")
-                        .HasMaxLength(1500)
-                        .HasColumnType("character varying(1500)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId");
 
@@ -374,25 +351,6 @@ namespace gym_tracker.Migrations
                     b.Navigation("Blocking");
                 });
 
-            modelBuilder.Entity("gym_tracker.Models.Comment", b =>
-                {
-                    b.HasOne("gym_tracker.Models.Post", "Post")
-                        .WithMany("Comments")
-                        .HasForeignKey("PostId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("gym_tracker.Infra.Users.AppUser", "User")
-                        .WithMany("Comments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Post");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("gym_tracker.Models.FollowUser", b =>
                 {
                     b.HasOne("gym_tracker.Infra.Users.AppUser", "Following")
@@ -429,18 +387,11 @@ namespace gym_tracker.Migrations
 
                     b.Navigation("Blocking");
 
-                    b.Navigation("Comments");
-
                     b.Navigation("Follower");
 
                     b.Navigation("Following");
 
                     b.Navigation("Posts");
-                });
-
-            modelBuilder.Entity("gym_tracker.Models.Post", b =>
-                {
-                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

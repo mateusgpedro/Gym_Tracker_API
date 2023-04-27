@@ -46,24 +46,24 @@ public class FollowService : IFollowService
         return true;
     }
 
-    public async Task<bool> UnfollowUser(AppUser currentUser, AppUser followedUser, bool canSave)
+    public async Task<bool> UnfollowUser(AppUser currentUser, AppUser followerUser, bool canSave)
     {
         currentUser = await GetUserByIdWithFollowersAndFollowing(currentUser.Id);
 
-        var follow = currentUser.Following.FirstOrDefault(f => f.FollowingId == followedUser.Id);
+        var follow = currentUser.Following.FirstOrDefault(f => f.FollowingId == followerUser.Id);
 
         if (follow == null)
             return false;
         
         currentUser.Following.Remove(follow);
-        followedUser.Follower.Remove(follow);
+        followerUser.Follower.Remove(follow);
         if (canSave)
         {
             var result = await _userManager.UpdateAsync(currentUser);
             if (!result.Succeeded)
                 return false;
 
-            result = await _userManager.UpdateAsync(followedUser);
+            result = await _userManager.UpdateAsync(followerUser);
             if (!result.Succeeded)
                 return false;
         }
