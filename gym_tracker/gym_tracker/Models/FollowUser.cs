@@ -9,12 +9,12 @@ public class FollowUser
     /// <summary>
     /// Id of the user who is following this user
     /// </summary>
-    public string FollowerId { get; set; }
+    public Guid FollowerId { get; set; }
     
     /// <summary>
     /// Id of user that is being followed by this user 
     /// </summary>
-    public string FollowingId { get; set; }
+    public Guid FollowingId { get; set; }
     
     /// <summary>
     /// User who is following this user

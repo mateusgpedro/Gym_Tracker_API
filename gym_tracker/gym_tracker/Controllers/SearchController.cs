@@ -62,7 +62,7 @@ public class SearchController : ControllerBase
         {
             users = await _dbContext.FollowUsers
                 .Include(u => u.Following)
-                .Where(f => f.FollowerId == request.Id && f.PendingStatus == false)
+                .Where(f => f.FollowerId == Guid.Parse(request.Id) && f.PendingStatus == false)
                 .Select(f => f.Following)
                 .Where(u => u.FullName == request.Username)
                 .Select(u => new GetUsersResponse(u.FullName, u.UserName))
@@ -72,7 +72,7 @@ public class SearchController : ControllerBase
         {
             users = await _dbContext.FollowUsers
                 .Include(u => u.Following)
-                .Where(f => f.FollowerId == request.Id && f.PendingStatus == false)
+                .Where(f => f.FollowerId == Guid.Parse(request.Id) && f.PendingStatus == false)
                 .Select(f => f.Following)
                 .Where(u => u.UserName == request.Username)
                 .Select(u => new GetUsersResponse(u.FullName, u.UserName))
@@ -98,7 +98,7 @@ public class SearchController : ControllerBase
         {
             users = await _dbContext.FollowUsers
                 .Include(u => u.Follower)
-                .Where(f => f.FollowingId == request.Id && f.PendingStatus == false)
+                .Where(f => f.FollowingId == Guid.Parse(request.Id) && f.PendingStatus == false)
                 .Select(f => f.Follower)
                 .Where(u => u.FullName == request.Username)
                 .Select(u => new GetUsersResponse(u.FullName, u.UserName))
@@ -108,7 +108,7 @@ public class SearchController : ControllerBase
         {
             users = await _dbContext.FollowUsers
                 .Include(u => u.Follower)
-                .Where(f => f.FollowingId == request.Id && f.PendingStatus == false)
+                .Where(f => f.FollowingId == Guid.Parse(request.Id) && f.PendingStatus == false)
                 .Select(f => f.Follower)
                 .Where(u => u.UserName == request.Username)
                 .Select(u => new GetUsersResponse(u.FullName, u.UserName))

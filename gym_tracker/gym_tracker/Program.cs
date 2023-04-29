@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddNpgsql<ApplicationDbContext>(builder.Configuration["ConnectionStrings:GymTrackerDb"]);
-builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
     {
         options.User.RequireUniqueEmail = true;
         options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyz1234567890._-";

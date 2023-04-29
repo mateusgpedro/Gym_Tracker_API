@@ -2,19 +2,18 @@ using gym_tracker.Infra.Users;
 
 namespace gym_tracker.Models;
 
-public class Comment : PostEntity
+public class Comment
 {
     public Guid Id { get; set; }
     public AppUser User { get; set; }
-    public string UserId { get; set; }
+    public Guid UserId { get; set; } 
     public Post Post { get; set; }
-    public string PostId { get; set; }
+    public Guid PostId { get; set; }
     public string CommentText { get; set; }
-    public ICollection<Vote<Comment>> Votes { get; set; }
+    public ICollection<Vote> Votes { get; set; }
 
-    public Comment(string userId, string postId, string commentText)
+    public Comment(Guid userId, Guid postId, string commentText)
     {
-        Id = Guid.NewGuid();
         UserId = userId;
         PostId = postId;
         CommentText = commentText;

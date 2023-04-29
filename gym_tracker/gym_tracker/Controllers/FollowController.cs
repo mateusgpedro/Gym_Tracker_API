@@ -76,7 +76,7 @@ public class FollowController : ControllerBase
         if (user == null)
             return BadRequest("Failed to find user with the specific id");
         var count = await _userManager.Users
-            .Where(u => u.Id == userId)
+            .Where(u => u.Id == Guid.Parse(userId))
             .SelectMany(u => u.Follower)
             .CountAsync(u => u.PendingStatus == false);
         
@@ -91,7 +91,7 @@ public class FollowController : ControllerBase
         if (user == null)
             return BadRequest("Failed to find user with the specific id");
         var count = await _userManager.Users
-            .Where(u => u.Id == userId)
+            .Where(u => u.Id == Guid.Parse(userId))
             .SelectMany(u => u.Following)
             .CountAsync(u => u.PendingStatus == false);
 
@@ -108,7 +108,7 @@ public class FollowController : ControllerBase
         
         var requests = await _dbContext.FollowUsers
             .Include(f => f.Follower)
-            .Where(f => f.FollowingId == userId && f.PendingStatus == true)
+            .Where(f => f.FollowingId == Guid.Parse(userId) && f.PendingStatus == true)
             .Select(f => f.Follower)
             .Select(f => new GetUsersResponse(f.FullName, f.UserName))
             .ToListAsync();
@@ -122,8 +122,8 @@ public class FollowController : ControllerBase
     [HttpPut("accept-follow")]
     public async Task<ActionResult> AcceptFollowRequest(FollowActionRequest request)
     {
-        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId, _userManager);
-        var followerUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.TargetUserId, _userManager);
+        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(Guid.Parse(request.CurrentUserId), _userManager);
+        var followerUser = await GetUser.GetUserByIdWithFollowersAndFollowing(Guid.Parse(request.TargetUserId), _userManager);
 
         if (currentUser == null || followerUser == null)
             return BadRequest("Failed to find user with the specific id");
@@ -139,12 +139,12 @@ public class FollowController : ControllerBase
     [HttpGet("is-following")]
     public async Task<ActionResult<bool>> GetIfIsFolloingwUser(FollowRequest request)
     {
-        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId, _userManager);
+        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(Guid.Parse(request.CurrentUserId), _userManager);
         
         if (currentUser == null)
             return BadRequest("Failed to find user with the specific id");
         
-        return Ok(currentUser.Following.Any(f => f.FollowingId == request.TargetUserId && f.PendingStatus == false));
+        return Ok(currentUser.Following.Any(f => f.FollowingId == Guid.Parse(request.TargetUserId) && f.PendingStatus == false));
     }
     
     [HttpGet("user-followers/{userId}")]
@@ -158,7 +158,7 @@ public class FollowController : ControllerBase
 
         var follower = await _dbContext.FollowUsers
             .Include(f => f.Follower)
-            .Where(f => f.FollowingId == userId && f.PendingStatus == false)
+            .Where(f => f.FollowingId == Guid.Parse(userId) && f.PendingStatus == false)
             .Select(f => f.Follower)
             .Select(f => new GetUsersResponse(f.FullName, f.UserName))
             .ToListAsync();
@@ -180,7 +180,7 @@ public class FollowController : ControllerBase
 
         var follower = await _dbContext.FollowUsers
             .Include(f => f.Following)
-            .Where(f => f.FollowerId == userId && f.PendingStatus == false)
+            .Where(f => f.FollowerId == Guid.Parse(userId) && f.PendingStatus == false)
             .Select(f => f.Following)
             .Select(u => new GetUsersResponse(u.FullName, u.UserName))
             .ToListAsync();
@@ -194,8 +194,8 @@ public class FollowController : ControllerBase
     [HttpPost("block-user")]
     public async Task<ActionResult> BlockUser(BlockUserRequest request)
     {
-        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.CurrentUserId, _userManager);
-        var blockedUser = await GetUser.GetUserByIdWithFollowersAndFollowing(request.BlockedUserId, _userManager);
+        var currentUser = await GetUser.GetUserByIdWithFollowersAndFollowing(Guid.Parse(request.CurrentUserId), _userManager);
+        var blockedUser = await GetUser.GetUserByIdWithFollowersAndFollowing(Guid.Parse(request.BlockedUserId), _userManager);
 
         if (currentUser == null || blockedUser == null)
             return BadRequest("Failed to find user with specific id");

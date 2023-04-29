@@ -33,19 +33,14 @@ public class PostController : ControllerBase
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)
             return BadRequest("Failed to find user with the specified id");
-        var post = new Post(request.UserId, request.Title, request.Text);
+        var post = new Post(Guid.Parse(request.UserId), request.Title, request.Text);
 
         if (user.Posts.IsNullOrEmpty())
             user.Posts = new List<Post>();
         
         user.Posts.Add(post);
-        var result = await _userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-        {
-            result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-                return Ok("Failed to save changes");
-        }
+        
+        await _dbContext.SaveChangesAsync();
         return Ok("Successfully created post");
     }
 
@@ -53,11 +48,10 @@ public class PostController : ControllerBase
     [HttpPost("add-comment")]
     public async Task<ActionResult> AddComment(AddCommentRequest request)
     {
-        var result = await _postService
-            .CreateComment(request.UserId, request.PostId, request.CommentText);
+        var result = await _postService.CreateComment(request.UserId, request.PostId, request.CommentText);
 
         if (!result)
-            return BadRequest("Failed to comment");
+            return BadRequest("Failed to create comment");
         
         await _dbContext.SaveChangesAsync();
         return Ok("Successfully commented");
@@ -67,16 +61,17 @@ public class PostController : ControllerBase
     [HttpPost("add-vote")]
     public async Task<ActionResult> AddVote(VoteRequest request)
     {
-        var hasVote = await Verify.HasVote(request.UserId, request.ItemId, _userManager);
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+            return BadRequest("Failed to find user with the specified id");
+        bool hasVoted = await Verify.HasVote(user.Id, Guid.Parse(request.ItemId), _userManager);
         bool result;
 
-        if (hasVote)
+        if (hasVoted)
             result = await _postService.ChangeVote(request.UserId, request.ItemId);
         else
-        {
-            result = await _postService
-                .CreateVote(request.UserId, request.ItemId, request.IsUpvote);
-        }
+            result = await _postService.CreateVote(request.UserId, request.ItemId, request.IsUpvote);
+
         if (!result)
             return BadRequest("Failed to vote");
         

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace gym_tracker.Infra.Users;
 
-public class AppUser : IdentityUser
+public class AppUser : IdentityUser<Guid>
 {
     public AppUser()
     {
@@ -17,9 +17,9 @@ public class AppUser : IdentityUser
 
         Posts = new List<Post>();
         Comments = new List<Comment>();
+        
     } 
     
-    public override string Id { get; set; }
     public required string FullName { get; set; }
     
     // Follow system
@@ -31,10 +31,7 @@ public class AppUser : IdentityUser
 
     public ICollection<Post> Posts { get; set; }
     public ICollection<Comment> Comments { get; set; }
-    
-    public ICollection<Vote<Post>> PostVotes { get; set; }
-    public ICollection<Vote<Comment>> CommentVotes { get; set; }
-
+    public ICollection<Vote> Votes { get; set; }
     // Account Settings
-    public bool IsPrivate { get; set; } = false;
+    public bool IsPrivate { get; set; }
 }

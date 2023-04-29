@@ -288,3 +288,4 @@ H:\Gym_Tracker_API\gym_tracker\gym_tracker\bin\Debug\net7.0\Npgsql.dll
 H:\Gym_Tracker_API\gym_tracker\gym_tracker\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
 H:\Gym_Tracker_API\gym_tracker\gym_tracker\bin\Debug\net7.0\Microsoft.EntityFrameworkCore.Relational.Design.dll
 H:\Gym_Tracker_API\gym_tracker\gym_tracker\bin\Debug\net7.0\Npgsql.EntityFrameworkCore.PostgreSQL.Design.dll
+H:\Gym_Tracker_API\gym_tracker\gym_tracker\bin\Debug\net7.0\Utils\package.json

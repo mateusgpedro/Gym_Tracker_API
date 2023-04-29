@@ -6,7 +6,7 @@ namespace gym_tracker.Utils;
 
 public class GetUser
 {
-    public static async Task<AppUser> GetUserByIdWithBlockAndFollow(string userId, UserManager<AppUser> userManager)
+    public static async Task<AppUser> GetUserByIdWithBlockAndFollow(Guid userId, UserManager<AppUser> userManager)
     {
         return (await userManager.Users
             .Include(u => u.Blocker)
@@ -16,7 +16,7 @@ public class GetUser
             .SingleOrDefaultAsync(u => u.Id == userId))!;
     }
     
-    public static async Task<AppUser> GetUserByIdWithBlockerAndBlocking(string userId, UserManager<AppUser> userManager)
+    public static async Task<AppUser> GetUserByIdWithBlockerAndBlocking(Guid userId, UserManager<AppUser> userManager)
     {
         return (await userManager.Users
             .Include(u => u.Blocker)
@@ -24,7 +24,7 @@ public class GetUser
             .SingleOrDefaultAsync(u => u.Id == userId))!;
     }
     
-    public static async Task<AppUser> GetUserByIdWithFollowersAndFollowing(string userId, UserManager<AppUser> userManager)
+    public static async Task<AppUser> GetUserByIdWithFollowersAndFollowing(Guid userId, UserManager<AppUser> userManager)
     {
         return (await userManager.Users
             .Include(u => u.Follower)
@@ -32,13 +32,12 @@ public class GetUser
             .SingleOrDefaultAsync(u => u.Id == userId))!;
     }
 
-    public static async Task<AppUser> GetUserByIdWithPostsCommentsVotes(string userId, UserManager<AppUser> userManager)
+    public static async Task<AppUser> GetUserByIdWithPostsCommentsAndVotes(Guid userId, UserManager<AppUser> userManager)
     {
         return (await userManager.Users
             .Include(u => u.Posts)
-            .Include(u => u.PostVotes)
             .Include(u => u.Comments)
-            .Include(u => u.CommentVotes)
+            .Include(u => u.Votes)
             .SingleOrDefaultAsync(u => u.Id == userId))!;
     }
 }
