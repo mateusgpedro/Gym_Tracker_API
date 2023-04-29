@@ -17,5 +17,6 @@ public class Comment
         UserId = userId;
         PostId = postId;
         CommentText = commentText;
+        Votes = new List<Vote>();
     }
 }

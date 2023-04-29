@@ -64,7 +64,10 @@ public class PostController : ControllerBase
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)
             return BadRequest("Failed to find user with the specified id");
-        bool hasVoted = await Verify.HasVote(user.Id, Guid.Parse(request.ItemId), _userManager);
+        if (user.Votes == null)
+            user.Votes = new List<Vote>();
+
+        bool hasVoted = await Verify.HasVote(user.Id, Guid.Parse(request.ItemId), _userManager, _dbContext);
         bool result;
 
         if (hasVoted)

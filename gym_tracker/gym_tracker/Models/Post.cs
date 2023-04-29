@@ -18,5 +18,6 @@ public class Post
         Title = title;
         Text = text;
         Comments = new List<Comment>();
+        Votes = new List<Vote>();
     }
 }

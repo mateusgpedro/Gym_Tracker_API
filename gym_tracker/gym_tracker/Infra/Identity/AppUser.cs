@@ -17,7 +17,7 @@ public class AppUser : IdentityUser<Guid>
 
         Posts = new List<Post>();
         Comments = new List<Comment>();
-        
+        Votes = new List<Vote>();
     } 
     
     public required string FullName { get; set; }
