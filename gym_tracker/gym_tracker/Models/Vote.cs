@@ -2,24 +2,19 @@ using gym_tracker.Infra.Users;
 
 namespace gym_tracker.Models;
 
-public class Vote
+public class Vote<TItem> where TItem : VotingEntities
 {
     public Guid Id { get; set; }
-    public bool IsUpvote { get; set; }
-    
     public Guid UserId { get; set; }
-    public readonly Guid? PostId;
-    public readonly Guid? CommentId;
+    public Guid? ItemId { get; set; }
     
-    public AppUser User { get; set; }
-    public Comment Comment { get; set; }
-    public Post Post { get; set; }
+    public bool IsUpvote { get; set; }
 
-    public Vote(Guid? postId, Guid? commentId, bool isUpvote)
+    public AppUser User { get; set; }
+    public TItem Item { get; set; }
+
+    public Vote()
     {
         Id = Guid.NewGuid();
-        PostId = postId;
-        CommentId = commentId;
-        IsUpvote = isUpvote;
     }
 }

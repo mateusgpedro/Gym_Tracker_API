@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using gym_tracker.Infra.Database;
@@ -11,9 +12,11 @@ using gym_tracker.Infra.Database;
 namespace gym_tracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230430211437_VoteChange")]
+    partial class VoteChange
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -308,7 +311,7 @@ namespace gym_tracker.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("gym_tracker.Models.Vote<gym_tracker.Models.Comment>", b =>
+            modelBuilder.Entity("gym_tracker.Models.Vote", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -317,7 +320,7 @@ namespace gym_tracker.Migrations
                     b.Property<bool>("IsUpvote")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("ItemId")
+                    b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
@@ -325,35 +328,11 @@ namespace gym_tracker.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemId");
+                    b.HasIndex("ParentId");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CommentVotes");
-                });
-
-            modelBuilder.Entity("gym_tracker.Models.Vote<gym_tracker.Models.Post>", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsUpvote")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid?>("ItemId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PostVotes");
+                    b.ToTable("Votes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -475,38 +454,27 @@ namespace gym_tracker.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("gym_tracker.Models.Vote<gym_tracker.Models.Comment>", b =>
+            modelBuilder.Entity("gym_tracker.Models.Vote", b =>
                 {
-                    b.HasOne("gym_tracker.Models.Comment", "Item")
+                    b.HasOne("gym_tracker.Models.Comment", "Comment")
                         .WithMany("Votes")
-                        .HasForeignKey("ItemId")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("gym_tracker.Models.Post", "Post")
+                        .WithMany("Votes")
+                        .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("gym_tracker.Infra.Users.AppUser", "User")
-                        .WithMany("CommentVotes")
+                        .WithMany("Votes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Item");
+                    b.Navigation("Comment");
 
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("gym_tracker.Models.Vote<gym_tracker.Models.Post>", b =>
-                {
-                    b.HasOne("gym_tracker.Models.Post", "Item")
-                        .WithMany("Votes")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("gym_tracker.Infra.Users.AppUser", "User")
-                        .WithMany("PostVotes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Item");
+                    b.Navigation("Post");
 
                     b.Navigation("User");
                 });
@@ -517,17 +485,15 @@ namespace gym_tracker.Migrations
 
                     b.Navigation("Blocking");
 
-                    b.Navigation("CommentVotes");
-
                     b.Navigation("Comments");
 
                     b.Navigation("Follower");
 
                     b.Navigation("Following");
 
-                    b.Navigation("PostVotes");
-
                     b.Navigation("Posts");
+
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("gym_tracker.Models.Comment", b =>

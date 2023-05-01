@@ -87,28 +87,41 @@ public class ApplicationDbContext : IdentityDbContext<AppUser, IdentityRole<Guid
                 .HasMaxLength(1500);
         });
 
-        builder.Entity<Vote>(v =>
+        builder.Entity<Vote<Post>>(v =>
         {
             v.HasKey(v => v.Id);
             
             v.HasOne(v => v.User).
-                WithMany(u => u.Votes)
+                WithMany(u => u.PostVotes)
                 .HasForeignKey(v => v.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-            v.HasOne(v => v.Comment)
-                .WithMany(c => c.Votes)
-                .HasForeignKey(v => v.CommentId)
-                .OnDelete(DeleteBehavior.Restrict);
-            v.HasOne(v => v.Post)
+            
+            v.HasOne(v => v.Item)
                 .WithMany(p => p.Votes)
-                .HasForeignKey(v => v.PostId)
+                .HasForeignKey(v => v.ItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+        
+        builder.Entity<Vote<Comment>>(v =>
+        {
+            v.HasKey(v => v.Id);
+            
+            v.HasOne(v => v.User).
+                WithMany(u => u.CommentVotes)
+                .HasForeignKey(v => v.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            v.HasOne(v => v.Item)
+                .WithMany(p => p.Votes)
+                .HasForeignKey(v => v.ItemId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
         #endregion
     }
-
-    public DbSet<Vote> Votes { get; set; }
+    
+    public DbSet<Vote<Post>> PostVotes { get; set; }
+    public DbSet<Vote<Comment>> CommentVotes { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<FollowUser> FollowUsers { get; set; }

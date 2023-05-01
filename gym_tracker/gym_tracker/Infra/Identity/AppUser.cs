@@ -17,7 +17,7 @@ public class AppUser : IdentityUser<Guid>
 
         Posts = new List<Post>();
         Comments = new List<Comment>();
-        Votes = new List<Vote>();
+        PostVotes = new List<Vote<Post>>();
     } 
     
     public required string FullName { get; set; }
@@ -31,7 +31,8 @@ public class AppUser : IdentityUser<Guid>
 
     public ICollection<Post> Posts { get; set; }
     public ICollection<Comment> Comments { get; set; }
-    public ICollection<Vote> Votes { get; set; }
+    public ICollection<Vote<Post>> PostVotes { get; set; }
+    public ICollection<Vote<Comment>> CommentVotes { get; set; }
     // Account Settings
     public bool IsPrivate { get; set; }
 }

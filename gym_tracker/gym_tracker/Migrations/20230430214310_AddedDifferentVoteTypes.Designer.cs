@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using gym_tracker.Infra.Database;
@@ -11,9 +12,11 @@ using gym_tracker.Infra.Database;
 namespace gym_tracker.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230430214310_AddedDifferentVoteTypes")]
+    partial class AddedDifferentVoteTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -329,7 +332,7 @@ namespace gym_tracker.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CommentVotes");
+                    b.ToTable("Vote<Comment>");
                 });
 
             modelBuilder.Entity("gym_tracker.Models.Vote<gym_tracker.Models.Post>", b =>
@@ -353,7 +356,7 @@ namespace gym_tracker.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostVotes");
+                    b.ToTable("Vote<Post>");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

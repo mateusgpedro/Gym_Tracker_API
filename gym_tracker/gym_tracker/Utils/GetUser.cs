@@ -37,7 +37,8 @@ public class GetUser
         return (await userManager.Users
             .Include(u => u.Posts)
             .Include(u => u.Comments)
-            .Include(u => u.Votes)
+            .Include(u => u.PostVotes)
+            .Include(u => u.CommentVotes)
             .SingleOrDefaultAsync(u => u.Id == userId))!;
     }
 }
